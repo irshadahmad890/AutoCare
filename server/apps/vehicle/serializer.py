@@ -1,9 +1,10 @@
-from rest_framework import serializers 
-from models import Vehicle
+from rest_framework import serializers
+from .models import Vehicle
 
-class VehiceSerializer(serializers.ModelSerializer):
+
+class VehicleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vehicle
-        feilds = ['customer', 'make', 'model', 'year', 'registration_number']
-
+        fields = ['id', 'customer', 'make', 'model', 'year', 'registration_number', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
