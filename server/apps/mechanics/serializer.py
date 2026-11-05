@@ -5,7 +5,7 @@ class MechanicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Mechanic
-        fields = ['id', 'user', 'name', 'mechanic_type', 'phone_number', 'hourly_rate', 'is_available', 'created_at']
+        fields = ['id', 'user', 'name', 'mechanic_type', 'phone_number', 'hourly_rate', 'is_active', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 
