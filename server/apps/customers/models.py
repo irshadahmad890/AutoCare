@@ -15,4 +15,3 @@ class Customer(models.Model):
     class Meta:
         ordering = ['-created_at']
         verbose_name_plural = 'Customers'
-
