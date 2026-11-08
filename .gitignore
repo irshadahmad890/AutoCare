@@ -1,6 +1,6 @@
 venv/
 
-.env
+server/.env
 
 config/__pycache__/
 *.py[cod]
@@ -9,3 +9,5 @@ media/
 staticfiles/
 
 server\config\__pycache__\
+
+.vscode/

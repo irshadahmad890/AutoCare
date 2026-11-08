@@ -24,7 +24,23 @@ The following components are currently present in the project:
 | Job Parts       | Parts and quantities associated with repair jobs     |
 | Payments        | App structure created; implementation pending        |
 
-**Note:** These are initial database models. REST APIs, business logic, frontend functionality, and complete workflows are still under development.
+**This Week:**
+1. Test the web system models that designed for database. 
+2. Connect the database to web system and implement the serialization and start the process of validation data that is actually JSON format. 
+3. Implement the CRUD operations on Customers and Vehicles. 
+4. Test the APIs through Postman and database stores correctly 
+5. Few error occurs try to solve in progress....!
+
+**Note:** REST APIs, business logic, frontend functionality, and complete workflows are still under development.
+
+### Current authentication and access-control state
+
+- JWT authentication is listed in Django REST Framework settings.
+- The global default permission is currently `AllowAny`.
+- The Simple JWT token URL configuration is commented out.
+- Customer views do not yet define role-based permissions or restrict querysets by the logged-in user's ownership.
+
+**Important:** JWT authentication being configured does not by itself secure an endpoint. Until explicit permissions and queryset restrictions are implemented, the current Customer API must not be treated as production-secure.
 
 ---
 
