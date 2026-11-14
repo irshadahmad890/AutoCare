@@ -25,9 +25,9 @@ class Mechanic(models.Model):
     ]
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete = models.PROTECT, related_name = 'mechanic_profile')
-    specialization = models.ForeignKey(Specialization, on_delete = models.PROTECT, related_name = 'mechanics', null = True)
+    specialization = models.ForeignKey(Specialization, on_delete = models.PROTECT, related_name = 'mechanics')
     name = models.CharField(max_length = 100)
-    experience_level = models.CharField(max_length = 20, choices = EXPERIENCE_LEVEL_CHOICES, default = 'Junior')
+    experience_level = models.CharField(max_length = 20, choices = EXPERIENCE_LEVEL_CHOICES)
     hourly_rate = models.DecimalField(max_digits = 10, decimal_places = 2, validators = [MinValueValidator(0)])
     is_active = models.BooleanField(default = True)
     created_at = models.DateTimeField(auto_now_add = True)
