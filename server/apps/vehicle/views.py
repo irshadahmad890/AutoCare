@@ -4,39 +4,59 @@ from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView
 )
-from rest_framework.permissions import IsAuthenticated
+from apps.common.permissions import IsCustomerOrAdmin, VehiclePermissions
+from rest_framework.exceptions import ValidationError
+from apps.user.models import User, Role
+from apps.customers.models import Customer
 
 class VehicleListCreateView(ListCreateAPIView):
-
-    queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCustomerOrAdmin]
 
     def get_queryset(self):
         user = self.request.user
+        if isinstance(user, User):
+            if user.role == Role.ADMIN:
+                return Vehicle.objects.all()
+            if user.role == Role.CUSTOMER:
+                return Vehicle.objects.filter(customer__user=user)
+        return Vehicle.objects.none()
 
-        if (
-            getattr(user, 'role', None) == 'admin'
-            or getattr(user, 'is_superuser', False)
-        ):
-            return Vehicle.objects.all()
-
-        return Vehicle.objects.filter(customer__user=user)
-
+    def perform_create(self, serializer):
+        user = self.request.user
+        if isinstance(user, User):
+            if user.role == Role.ADMIN:
+                if not serializer.validated_data.get('customer'):
+                    raise ValidationError({
+                        'customer': 'Please select a customer.'
+                    })
+                serializer.save()
+            elif user.role == Role.CUSTOMER:
+                try:
+                    customer = user.customer_profile
+                except Customer.DoesNotExist:
+                    raise ValidationError({
+                        'customer': 'Customer profile does not exist.'
+                    })
+                serializer.save(customer = customer)
 
 class VehicleDetailView(RetrieveUpdateDestroyAPIView):
-
-    queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsCustomerOrAdmin, VehiclePermissions]
 
     def get_queryset(self):
         user = self.request.user
+        if isinstance(user, User):
+            if user.role == Role.ADMIN:
+                return Vehicle.objects.all()
+            if user.role == Role.CUSTOMER:
+                return Vehicle.objects.filter(customer__user=user)
+        return Vehicle.objects.none()
 
-        if (
-            getattr(user, 'role', None) == 'admin'
-            or getattr(user, 'is_superuser', False)
-        ):
-            return Vehicle.objects.all()
-
-        return Vehicle.objects.filter(customer__user=user)
+    def perform_update(self, serializer):
+        user = self.request.user
+        if isinstance(user, User) and user.role == Role.CUSTOMER:
+            customer = user.customer_profile
+            serializer.save(customer=customer)
+        else:
+            serializer.save()
