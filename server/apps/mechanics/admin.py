@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import (Mechanic, JobMechanic)
+from .models import Mechanic
 
 # Register your models here.
 admin.site.register(Mechanic)
-admin.site.register(JobMechanic)
