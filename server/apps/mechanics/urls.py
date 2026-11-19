@@ -4,8 +4,6 @@ from .views import (
     SpecializationDetailView,
     MechanicListCreateView,
     MechanicDetailView,
-    JobMechanicListCreateView,
-    JobMechanicDetailView
 )
 
 urlpatterns = [
@@ -13,6 +11,4 @@ urlpatterns = [
     path('specializations/<int:pk>/', SpecializationDetailView.as_view(), name = 'specialization-detail'),
     path('', MechanicListCreateView.as_view(), name = 'mechanic-list-create'),
     path('<int:pk>/', MechanicDetailView.as_view(), name = 'mechanic-detail'),
-    path('assignments/', JobMechanicListCreateView.as_view(), name = 'job-mechanic-list-create'),
-    path('assignments/<int:pk>/', JobMechanicDetailView.as_view(), name = 'job-mechanic-detail'),
 ]
