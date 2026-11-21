@@ -1,10 +1,10 @@
 from rest_framework import generics
+from .models import Customer
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from apps.common.permissions import IsAdmin, IsCustomer
-from .models import Customer
 from .serializer import CustomerSerializer, CustomerSelfSerializer
 from .filters import CustomerFilter
 
@@ -16,14 +16,13 @@ class CustomerListCreateView(generics.ListCreateAPIView):
     filterset_class = CustomerFilter
     search_fields = ['name', 'phone', 'address', 'user__email']
     ordering_fields = ['name', 'created_at']
-
+    
 @extend_schema(tags=['Customers'])
 class CustomerDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CustomerSerializer
     queryset = Customer.objects.all()
     permission_classes = [IsAdmin]
     
-
 @extend_schema(tags=['Customers'])
 class CustomerProfileView(APIView):
     serializer_class = CustomerSelfSerializer
@@ -35,3 +34,11 @@ class CustomerProfileView(APIView):
     def get(self, request):
         serializer = self.serializer_class(self.get_customer())
         return Response(serializer.data)
+
+    def put(self, request):
+        serializer = self.serializer_class(self.get_customer(), data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    patch = put

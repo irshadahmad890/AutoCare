@@ -1,11 +1,38 @@
 from rest_framework import serializers
-from .models import Job, JobMechanic, JobPart
+from .models import Estimate, Job, JobMechanic, JobPart, JobStatus
 
 class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = ['id', 'job_number', 'vehicle', 'description', 'status', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'job_number', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'job_number', 'status', 'created_at', 'updated_at']
+
+    def validate_status(self, value):
+        # Stage changes are handled by the dedicated transition endpoint.
+        if self.instance and value != self.instance.status:
+            raise serializers.ValidationError('Use the job transition endpoint to change status.')
+        return value
+
+
+class EstimateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Estimate
+        fields = ['id', 'job', 'status', 'notes', 'sent_at', 'responded_at',
+                  'approved_by', 'stock_deducted', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'status', 'sent_at', 'responded_at', 'approved_by',
+                            'stock_deducted', 'created_at', 'updated_at']
+
+
+class SendEstimateSerializer(serializers.Serializer):
+    notes = serializers.CharField(required=False, allow_blank=True)
+
+
+class EstimateResponseSerializer(serializers.Serializer):
+    approve = serializers.BooleanField()
+
+
+class JobTransitionSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=JobStatus.choices)
 
 class JobMechanicSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,11 +49,6 @@ class JobPartSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         part = attrs.get('part', self.instance.part if self.instance else None)
         quantity = attrs.get('quantity', self.instance.quantity if self.instance else None)
-        if part and quantity and quantity > part.stock:
-            raise serializers.ValidationError({
-                'quantity': 'Insufficient stock available.'
-            })
-
         return attrs
     
     def create(self, validated_data):

@@ -6,6 +6,8 @@ from apps.parts.models import Part
 
 class JobStatus(models.TextChoices):
     PENDING = 'pending', 'Pending'
+    AWAITING_APPROVAL = 'awaiting_approval', 'Awaiting Approval'
+    APPROVED = 'approved', 'Approved'
     IN_PROGRESS = 'in_progress', 'In Progress'
     COMPLETED = 'completed', 'Completed'
     CANCELLED = 'cancelled', 'Cancelled'
@@ -31,6 +33,31 @@ class Job(models.Model):
 
     class Meta:
         ordering = ['-created_at', 'id']
+
+class EstimateStatus(models.TextChoices):
+    DRAFT = 'draft', 'Draft'
+    SENT = 'sent', 'Sent'
+    APPROVED = 'approved', 'Approved'
+    REJECTED = 'rejected', 'Rejected'
+
+
+class Estimate(models.Model):
+    """The customer's approval point before stock is consumed."""
+    job = models.OneToOneField(Job, on_delete=models.CASCADE, related_name='estimate')
+    status = models.CharField(max_length=20, choices=EstimateStatus.choices, default=EstimateStatus.DRAFT)
+    notes = models.TextField(blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(
+        'user.User', null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='approved_estimates'
+    )
+    stock_deducted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
 class JobMechanic(models.Model):
     job = models.ForeignKey(Job, on_delete = models.CASCADE, related_name = 'mechanic_assignments')
