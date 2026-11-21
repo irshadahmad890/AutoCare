@@ -8,7 +8,9 @@ from apps.common.permissions import IsCustomerOrAdmin, VehiclePermissions
 from rest_framework.exceptions import ValidationError
 from apps.user.models import User, Role
 from apps.customers.models import Customer
+from drf_spectacular.utils import extend_schema
 
+@extend_schema(tags=['Vehicles'])
 class VehicleListCreateView(ListCreateAPIView):
     serializer_class = VehicleSerializer
     permission_classes = [IsCustomerOrAdmin]
@@ -40,6 +42,7 @@ class VehicleListCreateView(ListCreateAPIView):
                     })
                 serializer.save(customer = customer)
 
+@extend_schema(tags=['Vehicles'])
 class VehicleDetailView(RetrieveUpdateDestroyAPIView):
     serializer_class = VehicleSerializer
     permission_classes = [IsCustomerOrAdmin, VehiclePermissions]

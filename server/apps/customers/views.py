@@ -1,48 +1,37 @@
-
-from rest_framework.generics import (
-    ListCreateAPIView,
-    RetrieveUpdateDestroyAPIView
-)
-from rest_framework.permissions import IsAuthenticated
-
+from rest_framework import generics
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
+from apps.common.permissions import IsAdmin, IsCustomer
 from .models import Customer
-from .serializer import CustomerSerializer
+from .serializer import CustomerSerializer, CustomerSelfSerializer
+from .filters import CustomerFilter
 
-
-class CustomerListCreateView(ListCreateAPIView):
-    queryset = Customer.objects.all()
+@extend_schema(tags=['Customers'])
+class CustomerListCreateView(generics.ListCreateAPIView):
     serializer_class = CustomerSerializer
-    permission_classes = [IsAuthenticated]
-
-    # type: ignore[override]
-    def get_queryset(self):
-        user = self.request.user
-
-        if (
-            getattr(user, 'role', None) == 'admin'
-            or getattr(user, 'is_superuser', False)
-        ):
-            return Customer.objects.all()
-
-        return Customer.objects.filter(user=user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-
-class CustomerDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Customer.objects.all()
+    permission_classes = [IsAdmin]
+    filterset_class = CustomerFilter
+    search_fields = ['name', 'phone', 'address', 'user__email']
+    ordering_fields = ['name', 'created_at']
+
+@extend_schema(tags=['Customers'])
+class CustomerDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CustomerSerializer
-    permission_classes = [IsAuthenticated]
+    queryset = Customer.objects.all()
+    permission_classes = [IsAdmin]
+    
 
-    # type: ignore[override]
-    def get_queryset(self):
-        user = self.request.user
+@extend_schema(tags=['Customers'])
+class CustomerProfileView(APIView):
+    serializer_class = CustomerSelfSerializer
+    permission_classes = [IsCustomer]
 
-        if (
-            getattr(user, 'role', None) == 'admin'
-            or getattr(user, 'is_superuser', False)
-        ):
-            return Customer.objects.all()
+    def get_customer(self):
+        return get_object_or_404(Customer, user=self.request.user)
 
-        return Customer.objects.filter(user=user)
+    def get(self, request):
+        serializer = self.serializer_class(self.get_customer())
+        return Response(serializer.data)
