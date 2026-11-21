@@ -23,8 +23,10 @@ class InvoiceListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Invoice.objects.select_related('job', 'job__vehicle', 'job__vehicle__customer')
-        if user.role == Role.ADMIN:
+        queryset = Invoice.objects.select_related('job', 'job__vehicle', 'job__vehicle__customer').prefetch_related('payments')
+        if not user.is_authenticated:
+            return queryset.none()
+        if getattr(user, 'role', None) == Role.ADMIN:
             return queryset
         return queryset.filter(job__vehicle__customer__user = user)
 
@@ -35,8 +37,8 @@ class InvoiceDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Invoice.objects.select_related('job', 'job__vehicle', 'job__vehicle__customer')
-        if user.role == Role.ADMIN:
+        queryset = Invoice.objects.select_related('job', 'job__vehicle', 'job__vehicle__customer').prefetch_related('payments')
+        if getattr(user, 'role', None) == Role.ADMIN:
             return queryset
         return queryset.filter(job__vehicle__customer__user = user)
 
@@ -124,8 +126,10 @@ class PaymentListView(generics.ListAPIView):
             'invoice', 'invoice__job', 'invoice__job__vehicle',
             'invoice__job__vehicle__customer', 'received_by'
         )
+        if not user.is_authenticated:
+            return queryset.none()
 
-        if user.role == Role.ADMIN:
+        if getattr(user, 'role', None) == Role.ADMIN:
             return queryset
 
         return queryset.filter(
@@ -144,7 +148,7 @@ class PaymentDetailView(generics.RetrieveAPIView):
             'invoice', 'invoice__job', 'invoice__job__vehicle',
             'invoice__job__vehicle__customer', 'received_by'
         )
-        if user.role == Role.ADMIN:
+        if getattr(user, 'role', None) == Role.ADMIN:
             return queryset
         return queryset.filter(
             invoice__job__vehicle__customer__user = user
