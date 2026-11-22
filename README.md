@@ -1,141 +1,162 @@
-# AutoCare – Garage Management System
 
-AutoCare is a garage management system designed to help independent vehicle service centers manage their daily operations, including customers, vehicles, repair jobs, mechanics, spare parts, and payments.
+# 🚗 AutoCare – Garage Management SaaS
 
-The project aims to replace manual garage records with a centralized digital system where garage staff can manage repair workflows and customers can track their vehicle service progress.
+**AutoCare** is a full-stack garage management application designed to digitize and simplify daily operations for independent automobile workshops and service centers.
 
-**Project Status:** Early Development – Django project structure and initial database models are being implemented.
+It replaces manual registers, notebooks, and disconnected spreadsheets with a centralized platform where garage administrators can manage customers, vehicles, mechanics, repair jobs, spare parts, invoices, and payments.
 
----
+Customers can access their vehicles, monitor repair progress, view service information, and manage their interactions with the garage.
 
-## Current Implementation
+## 🌐 Live Application
 
-The following components are currently present in the project:
+- **Frontend:** https://autocare-murex.vercel.app/
+- **Backend:** Django REST Framework API (Need Paid Server for Storage Media and Database Space)
+- **Repository:** https://github.com/irshadahmad890/AutoCare
 
-| Module          | Implementation                                       |
-| --------------- | ---------------------------------------------------- |
-| Custom User     | Custom Django user model with email, phone, and role |
-| Customers       | Customer information and contact details             |
-| Vehicles        | Vehicle information linked to customers              |
-| Repair Jobs     | Job number, vehicle, description, and status         |
-| Mechanics       | Mechanic profiles and hourly rates                   |
-| Job Assignments | Multiple mechanics assigned to one job               |
-| Parts           | Spare parts catalogue and stock quantity             |
-| Job Parts       | Parts and quantities associated with repair jobs     |
-| Payments        | App structure created; implementation pending        |
+## 🎯 Problem & Solution
 
-**This Week:**
-1. Test the web system models that designed for database. 
-2. Connect the database to web system and implement the serialization and start the process of validation data that is actually JSON format. 
-3. Implement the CRUD operations on Customers and Vehicles. 
-4. Test the APIs through Postman and database stores correctly 
-5. Few error occurs try to solve in progress....!
+Many independent garages still depend on manual records to manage their daily operations.
 
-**Note:** REST APIs, business logic, frontend functionality, and complete workflows are still under development.
+This creates problems such as:
 
-### Current authentication and access-control state
+- Difficulty tracking vehicle repair progress.
+- Disorganized customer and vehicle records.
+- Poor communication between mechanics and customers.
+- Errors in repair estimates, invoices, and payments.
+- Difficulty maintaining vehicle service history.
 
-- JWT authentication is listed in Django REST Framework settings.
-- The global default permission is currently `AllowAny`.
-- The Simple JWT token URL configuration is commented out.
-- Customer views do not yet define role-based permissions or restrict querysets by the logged-in user's ownership.
+AutoCare provides a centralized digital solution to manage these operations efficiently.
 
-**Important:** JWT authentication being configured does not by itself secure an endpoint. Until explicit permissions and queryset restrictions are implemented, the current Customer API must not be treated as production-secure.
+## ✨ Core Features
 
----
+### 1. Authentication & User Management
+- Customer registration and login.
+- JWT-based authentication.
+- Role-based access control.
+- Separate access for administrators, mechanics, and customers.
+- Secure account management.
 
-## Repair Workflow
+### 2. Customer Management
+- Create, view, update, and manage customer records.
+- Store customer contact information.
+- Manage customer-specific vehicle records.
+- Restrict customer access to their own information.
 
-The intended repair workflow:
+### 3. Vehicle Management
+- Register and manage customer vehicles.
+- Maintain vehicle information.
+- Associate vehicles with their respective customers.
+- Access vehicle service history.
 
-1. Register a customer.
-2. Register the customer's vehicle.
-3. Create a repair job for the vehicle.
-4. Inspect the vehicle and identify required repairs.
-5. Prepare an itemized repair estimate.
-6. Send the estimate to the customer for approval.
-7. Assign one or more mechanics to the repair job.
-8. Record mechanic working hours.
-9. Record spare parts used during repairs.
-10. Update repair progress and upload photos.
-11. Complete the repair job.
-12. Generate the final invoice.
-13. Record customer payment.
-14. Maintain the vehicle's service history.
+### 4. Repair & Job Management
+- Manage vehicle repair jobs.
+- Track repair status.
+- Assign mechanics to repair jobs.
+- Manage repair information and job progress.
 
----
+### 5. Mechanic Management
+- Create and manage mechanic profiles.
+- Manage mechanic specializations.
+- Assign multiple mechanics to repair jobs.
+- Track mechanic assignments.
 
-## Database Relationships
+### 6. Spare Parts & Inventory
+- Manage spare parts records.
+- Maintain part quantities and prices.
+- Associate parts with repair jobs.
+- Track parts used during repairs.
 
-The current database design includes the following relationships:
+### 7. Invoices & Payments
+- Manage customer invoices.
+- Associate invoices with repair jobs.
+- Record customer payments.
+- Maintain payment history.
+- Support printable payment receipts.
 
-| Relationship       | Description                                                         |
-| ------------------ | ------------------------------------------------------------------- |
-| Customer → Vehicle | One customer can have multiple vehicles.                            |
-| Vehicle → Job      | One vehicle can have multiple repair jobs.                          |
-| Job ↔ Mechanic     | Multiple mechanics can work on multiple jobs through `JobMechanic`. |
-| Job ↔ Part         | Multiple parts can be used in multiple jobs through `JobPart`.      |
-| User → Mechanic    | A user can have one mechanic profile.                               |
+### 8. Customer Portal
+- View registered vehicles.
+- Monitor repair progress.
+- Access repair information.
+- View invoices and payment information.
+- Access vehicle service history.
 
-### Important Database Design Decisions
+### 9. Frontend Dashboard
+- Modern garage management interface.
+- Administrative dashboard.
+- Customer-facing dashboard.
+- Mechanic-facing interface.
+- Responsive layouts for different screen sizes.
 
-**JobMechanic**
-
-This intermediate model stores:
-
-- Job
-- Mechanic
-- Working hours
-- Assignment date
-
-It allows multiple mechanics to work on the same repair job.
-
-**JobPart**
-
-This intermediate model stores:
-
-- Job
-- Part
-- Quantity
-- Unit price
-
-It records which parts are used for each repair job and preserves the unit price recorded at the time of use.
-
----
-
-## Technology Stack
+## 🛠️ Technology Stack
 
 ### Backend
-
 - Python
 - Django
 - Django REST Framework
 - Django REST Framework Simple JWT
 - MySQL
-- mysqlclient
-- python-decouple
+- django-filter
+- DRF Spectacular (OpenAPI documentation)
 
-### Development Tools
+### Frontend
+- Modern JavaScript frontend
+- HTML5
+- CSS3
+- REST API integration
 
-- Visual Studio Code
+### Deployment & Development
+- Vercel (Frontend hosting)
 - Git and GitHub
-- MySQL Workbench
+- Visual Studio Code
 - Postman
+- MySQL Workbench
 
-The frontend will be developed after the backend APIs and core business logic are ready.
+## 🏗️ System Architecture
 
----
+AutoCare follows a frontend-backend architecture.
 
-## Project Structure
+```text
+              CUSTOMER / ADMIN / MECHANIC
+                         |
+                         |
+                  FRONTEND APPLICATION
+                         |
+                         |
+                     REST APIs
+                         |
+                         |
+                 DJANGO REST FRAMEWORK
+                         |
+          +--------------+--------------+
+          |              |              |
+      AUTHENTICATION  BUSINESS LOGIC  PERMISSIONS
+          |              |              |
+          +--------------+--------------+
+                         |
+                    MYSQL DATABASE
+                         |
+          +--------------+--------------+
+          |              |              |
+       CUSTOMERS       VEHICLES       MECHANICS
+          |              |              |
+          +--------------+--------------+
+                         |
+                  REPAIR MANAGEMENT
+                         |
+              +----------+----------+
+              |          |          |
+            PARTS     INVOICES    PAYMENTS
+```
+
+## 📂 Project Structure
 
 ```text
 AutoCare/
 │
 ├── client/
-│   └── # Frontend application (planned)
+│   └── Frontend application
 │
 ├── server/
-│   │
 │   ├── apps/
 │   │   ├── user/
 │   │   ├── customers/
@@ -146,55 +167,136 @@ AutoCare/
 │   │   └── payments/
 │   │
 │   ├── config/
-│   │   ├── __init__.py
 │   │   ├── settings.py
 │   │   ├── urls.py
 │   │   ├── asgi.py
 │   │   └── wsgi.py
 │   │
-│   └── manage.py
+│   ├── manage.py
+│   └── requirements.txt
 │
 ├── .gitignore
-├── requirements.txt
 └── README.md
 ```
 
----
+## 🔐 Security & Access Control
 
-## Local Development Setup
+AutoCare uses authentication and permissions to protect application resources.
+
+- JWT authentication.
+- Role-based permissions.
+- Customer-specific data access.
+- Restricted administrative operations.
+- Mechanic-specific access to assigned work.
+- API validation and controlled data access.
+
+## ⚙️ Local Development Setup
 
 ### Prerequisites
 
-Before running the project, install:
+Install the following tools:
 
 - Python
 - MySQL Server
 - Git
 - Visual Studio Code
 
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/irshadahmad890/AutoCare.git
+cd AutoCare
+```
+
+### 2. Backend Setup
+
+Open PowerShell:
+
+```powershell
+cd server
+
+python -m venv venv
+
+.\venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+```
+
+Configure your environment variables and MySQL database according to the backend settings.
+
+Run database migrations:
+
+```powershell
+python manage.py migrate
+```
+
+Start the Django development server:
+
+```powershell
+python manage.py runserver
+```
+
+### 3. Frontend Setup
+
+Open another terminal:
+
+```powershell
+cd client
+
+npm install
+
+npm run dev
+```
+
+Configure the frontend API base URL to point to your running Django backend.
+
+**Note:** Frontend commands depend on the scripts defined in the client package.json.
+
+## 🚀 Deployment
+
+The frontend is hosted on Vercel.
+
+The application uses a separate backend architecture, so the Django API and database require their own hosting and configuration.
+
+Deployment considerations include:
+
+- Frontend production build.
+- Backend API hosting.
+- Production MySQL database.
+- Environment variables and secret management.
+- CORS configuration.
+- Secure API communication.
+- Media and file storage configuration.
+
+## 🗺️ Future Improvements
+
+- Real-time repair progress notifications.
+- Live mechanic progress updates.
+- Customer approval of repair estimates.
+- Advanced garage analytics.
+- Automated service reminders.
+- Online payment gateway integration.
+- Multi-garage SaaS support.
+
+## 👨‍💻 Developer
+
+**Irshad Ahmad**
+
+- GitHub: https://github.com/irshadahmad890/
+- LinkedIn: https://www.linkedin.com/in/irshad-ahmad-dev/
+
+## 📄 Project Status
+
+**Project:** AutoCare – Garage Management SaaS
+
+**Development:** Full-stack development
+
+**Backend:** Core API development completed according to the current project milestone.
+
+**Frontend:** Development and integration.
+
+**Deployment:** Frontend preview hosted on Vercel.
+
 ---
 
-## Development Roadmap
-
-### Phase 1 – Project Setup and Database Design
-
-- [✅] Create Django project structure.
-- [✅] Established Project applications.
-- [✅] Define the Database Schema 
-- [✅] Create the models for applications
-- [✅] Build the relationship between models
-- [✅] Review and finalize database relationships.
-- [✅] Complete database migrations.
-
-
----
-
-## Repository
-
-**GitHub:** [https://github.com/irshadahmad890/AutoCare](https://github.com/irshadahmad890/AutoCare)
-
-**Developer:** Irshad Ahmad
-
-**Project:** AutoCare – Garage Management System
-
-**Status:** Under Development
+Built to simplify garage operations through technology.

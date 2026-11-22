@@ -1,13 +1,14 @@
 venv/
 
 server/.env
+client/.env
 
-config/__pycache__/
 *.py[cod]
+__pycache__/
 db.sqlite3
 media/
 staticfiles/
 
-server\config\__pycache__\
-
 .vscode/
+
+render.yaml
