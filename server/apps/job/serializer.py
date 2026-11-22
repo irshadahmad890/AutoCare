@@ -44,11 +44,18 @@ class JobPartSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobPart
         fields = ['id', 'job', 'part', 'quantity', 'unit_price', 'added_at', 'updated_at']
-        read_only_fields = ['id','job','unit_price','added_at','updated_at']
+        read_only_fields = ['id', 'unit_price', 'added_at', 'updated_at']
 
     def validate(self, attrs):
         part = attrs.get('part', self.instance.part if self.instance else None)
         quantity = attrs.get('quantity', self.instance.quantity if self.instance else None)
+        job = attrs.get('job', self.instance.job if self.instance else None)
+        if not job:
+            raise serializers.ValidationError({'job': 'A job is required.'})
+        if self.instance and 'job' in attrs and attrs['job'] != self.instance.job:
+            raise serializers.ValidationError({'job': 'A part line cannot be moved to another job.'})
+        if not part or not quantity:
+            raise serializers.ValidationError('Part and quantity are required.')
         return attrs
     
     def create(self, validated_data):

@@ -25,11 +25,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default='false')
+# Accept conventional booleans and the existing "development" / "release"
+# deployment labels without treating any non-empty string as truthy.
+DEBUG = config('DEBUG', default='false').strip().lower() in {
+    '1', 'true', 'yes', 'on', 'development', 'dev'
+}
 
 ALLOWED_HOSTS = [host.strip() for host in config('ALLOWED_HOSTS', default='').split(',') if host.strip()]
 if not DEBUG:
-    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    # Enable only when TLS is terminated in front of Django. This keeps local
+    # release-like/test environments reachable over HTTP.
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
@@ -65,6 +71,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'apps.common.middleware.StrictCorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -97,19 +104,19 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
 
+DB_ENGINE = config('DB_ENGINE', default='django.db.backends.mysql')
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
+        "ENGINE": DB_ENGINE,
         "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST"),
-        "PORT": config("DB_PORT"),
-        "OPTIONS": {
-            "charset": "utf8mb4",
-        },
+        "USER": config("DB_USER", default=""),
+        "PASSWORD": config("DB_PASSWORD", default=""),
+        "HOST": config("DB_HOST", default=""),
+        "PORT": config("DB_PORT", default=""),
     }
 }
+if DB_ENGINE == 'django.db.backends.mysql':
+    DATABASES['default']['OPTIONS'] = {'charset': 'utf8mb4'}
 
 
 # Password validation
@@ -171,8 +178,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# The SPA may be deployed independently. Keep this list explicit; an empty
+# value means same-origin requests only.
+CORS_ALLOWED_ORIGINS = [
+    origin.strip() for origin in config('CORS_ALLOWED_ORIGINS', default='').split(',')
+    if origin.strip()
+]
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in config('CSRF_TRUSTED_ORIGINS', default='').split(',')
+    if origin.strip()
+]
 
 
 # Email

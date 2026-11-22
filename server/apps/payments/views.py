@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -156,8 +157,22 @@ class PaymentDetailView(generics.RetrieveAPIView):
 
 
 class InvoicePrintView(InvoiceDetailView):
-    pass
+    """Server-rendered, print-friendly invoice; access rules match the API."""
+
+    def get(self, request, *args, **kwargs):
+        invoice = self.get_object()
+        invoice = Invoice.objects.select_related(
+            'job__vehicle__customer', 'issued_by'
+        ).prefetch_related('job__used_parts__part', 'job__mechanic_assignments__mechanic').get(pk=invoice.pk)
+        return TemplateResponse(request, 'payments/invoice_print.html', {'invoice': invoice})
 
 
 class ReceiptPrintView(PaymentDetailView):
-    pass
+    """Server-rendered, print-friendly payment receipt."""
+
+    def get(self, request, *args, **kwargs):
+        payment = self.get_object()
+        payment = Payment.objects.select_related(
+            'invoice__job__vehicle__customer', 'received_by'
+        ).get(pk=payment.pk)
+        return TemplateResponse(request, 'payments/receipt_print.html', {'payment': payment})
