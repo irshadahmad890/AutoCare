@@ -22,7 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+# A development fallback keeps a fresh checkout usable, while production
+# deployments must supply their own value through the environment.
+SECRET_KEY = config('SECRET_KEY', default='unsafe-development-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Accept conventional booleans and the existing "development" / "release"
@@ -71,6 +73,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'apps.common.middleware.StrictCorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -108,7 +111,7 @@ DB_ENGINE = config('DB_ENGINE', default='django.db.backends.mysql')
 DATABASES = {
     "default": {
         "ENGINE": DB_ENGINE,
-        "NAME": config("DB_NAME"),
+        "NAME": config("DB_NAME", default="autocare"),
         "USER": config("DB_USER", default=""),
         "PASSWORD": config("DB_PASSWORD", default=""),
         "HOST": config("DB_HOST", default=""),
@@ -144,7 +147,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
     'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework_simplejwt.authentication.JWTAuthentication'],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'apps.common.pagination.StandardPagination',
     'PAGE_SIZE': 10,
 }
@@ -160,6 +167,15 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
     'COMPONENT_SPLIT_REQUEST': True,
+    # Keep the generated OpenAPI document stable. Several domain models have a
+    # field named ``status``, but each has a distinct choice set.
+    'ENUM_NAME_OVERRIDES': {
+        'JobStatusEnum': 'apps.job.models.JobStatus',
+        'EstimateStatusEnum': 'apps.job.models.EstimateStatus',
+        'InvoiceStatusEnum': 'apps.payments.models.InvoiceStatus',
+        'UserRoleEnum': 'apps.user.models.Role',
+        'PaymentMethodEnum': 'apps.payments.models.PaymentMethod',
+    },
     'SWAGGER_UI_SETTINGS': {
         'persistAuthorization': True,
     },
@@ -177,8 +193,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+if not DEBUG:
+    STORAGES = {
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        },
+    }
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 

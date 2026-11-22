@@ -12,6 +12,17 @@ class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == Role.ADMIN
 
+
+class IsAdminOrMechanicReadOnly(BasePermission):
+    """Inventory is editable by admins; mechanics need catalog visibility to log used parts."""
+
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        if request.user.role == Role.ADMIN:
+            return True
+        return request.method in SAFE_METHODS and request.user.role == Role.MECHANIC
+
 class IsCustomerOrAdmin(BasePermission):
 
     def has_permission(self, request, view):

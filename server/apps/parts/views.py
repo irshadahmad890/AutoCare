@@ -4,7 +4,7 @@ from rest_framework.generics import (
 )
 from .models import Part
 from .serializer import PartSerializer
-from apps.common.permissions import IsAdmin
+from apps.common.permissions import IsAdminOrMechanicReadOnly
 from drf_spectacular.utils import extend_schema
 from apps.common.pagination import StandardPagination
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,7 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 class PartListCreateView(ListCreateAPIView):
     queryset = Part.objects.all()
     serializer_class = PartSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAdminOrMechanicReadOnly]
     pagination_class = StandardPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['name', 'part_number']
@@ -24,4 +24,4 @@ class PartListCreateView(ListCreateAPIView):
 class PartDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Part.objects.all()
     serializer_class = PartSerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAdminOrMechanicReadOnly]
